@@ -106,9 +106,9 @@ class joinActivity : AppCompatActivity() {
 
             if (check_id&&check_name&&check_pw) {
                 var UUID=UUID.randomUUID().toString()
-                firebaseRef.child("UUID").setValue("$UUID")
-                firebaseRef.child("info").child("outgoing").setValue("none") // 발신
-                firebaseRef.child("info").child("receive").setValue("none") // 수신
+                firebaseRef.child("$userID").child("UUID").setValue("$UUID")
+                firebaseRef.child("$userID").child("info").child("outgoing").setValue("none") // 발신
+                firebaseRef.child("$userID").child("info").child("receive").setValue("none") // 수신
 
                 val intent = Intent(this, MainActivity::class.java)
                 intent.putExtra("username", username)
@@ -121,23 +121,25 @@ class joinActivity : AppCompatActivity() {
     }
 
 
+    //중복되는 부분 해결해야함
     private fun userID_check() {
+        overlapID=false
 
         if (userID == "")
             Toast.makeText(this, "You did not enter ID", Toast.LENGTH_SHORT).show()
         else {
             println("테스트 key:  else 진입")
-            //진입 이후가 안됨 !!
+
             firebaseRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val children = snapshot.children.iterator()
                     var key: String?
 
-                    //여기 문제
                     while (children.hasNext()) { // 다음 값이 있으면
                         key = children.next().key // 다음 데이터 반환
                         overlapID = userID == key
-                        println("테스트 key:  $key")
+                     //   if(overlapID)
+                        println("테스트 key:  $key // overlapID: $overlapID")
                     }
                 }
 
@@ -150,7 +152,8 @@ class joinActivity : AppCompatActivity() {
                 Toast.makeText(this, "Your ID is overlapped.", Toast.LENGTH_SHORT).show()
                 check_id = false
             } else {
-                firebaseRef = Firebase.database.getReference("$userID")
+               // firebaseRef = Firebase.database.getReference("$userID") // 이걸 추가하는 방식으로 수정 해야함
+                firebaseRef.child("$userID").setValue("test")
                 check_id = true
             }
 
@@ -158,11 +161,13 @@ class joinActivity : AppCompatActivity() {
 
     }
 
+
+
     private fun username_check() {
         if (username == "")
             Toast.makeText(this, "You did not enter name", Toast.LENGTH_SHORT).show()
         else if (check_id == true) {
-            firebaseRef.child("info").child("username").setValue("$username")
+            firebaseRef.child("$userID").child("info").child("username").setValue("$username")
             check_name = true
         }
     }
@@ -171,7 +176,7 @@ class joinActivity : AppCompatActivity() {
         if (userpw == "")
             Toast.makeText(this, "You did not enter password", Toast.LENGTH_SHORT).show()
         else if (check_id == true) {
-            firebaseRef.child("info").child("pw").setValue("$userpw")
+            firebaseRef.child("$userID").child("info").child("pw").setValue("$userpw")
             check_pw = true
         }
     }
