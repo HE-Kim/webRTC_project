@@ -67,8 +67,6 @@ class MainActivity : AppCompatActivity() {
             println("테스트1 check_username : $check_username")
 
 
-          //  val ID_val = check_ID()
-          //  println("테스트- check_ID 함수 val_PW: $ID_val")
 
             firebaseRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -84,26 +82,21 @@ class MainActivity : AppCompatActivity() {
                         key = children.next().key // 다음 데이터 반환
                         if (!key.isNullOrEmpty()) {
                             check_username = username == key
-                           // println("테스트 username: $username / key: $key / check_username : $check_username")
 
                             if (check_username) {
 
-                               // println("테스트 1 if 성공")
                                 firebaseRef.child(username).child("info").child("pw")
                                     .addValueEventListener(object : ValueEventListener {
                                         override fun onDataChange(snapshot: DataSnapshot) {
-                                            //println("테스트 2 파이어 베이스")
 
                                             val value = snapshot.value
-                                           // println("테스트 3 : ${snapshot.key} / ${snapshot.value}")
 
                                             if (value == userpw) {
                                                 check_userpw=true
-                                                intent()  //이걸 밖으로 빼는 작업을 해야할 듯함!
-                                                //intent 함수
-                                                //println("테스트4 pw 성공")
+                                                intent()
+
                                             } else {
-                                              //  Toast_wrong_pw(check_userpw)
+                                                Toast_wrong()
                                             }
                                         }
                                         override fun onCancelled(error: DatabaseError) {
@@ -111,12 +104,13 @@ class MainActivity : AppCompatActivity() {
                                         }
                                     })
                                 break;
-                            } else {
-                              //  Toast_wrong_id(check_username)
                             }
 
                         }
                     }
+                    if(!check_username)
+                    Toast_wrong()
+
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -131,91 +125,12 @@ class MainActivity : AppCompatActivity() {
 
     }
 
-    private fun check_ID(): Boolean {
 
-        val_PW=false
+    private fun Toast_wrong(){
 
-
-        firebaseRef.addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-
-                val children = snapshot.children.iterator()
-                var key: String?
-                check_username = false
-                check_userpw = false
-
-
-                while (children.hasNext()) { // 다음 값이 있으면
-                    key = children.next().key // 다음 데이터 반환
-                    if (!key.isNullOrEmpty()) {
-                        check_username = username == key
-                        // println("테스트 username: $username / key: $key / check_username : $check_username")
-
-                        if (check_username) {
-
-                            val_PW=check_PW()
-                            println("테스트- check_ID 함수 while 안 val_PW: $val_PW")
-
-                            // 브레이크 안하고 그냥 return 하면 어떨까~?
-                            break;
-                        } else {
-                            // TF 가려서 위에서 토스트 해주기 // 안그럼 자꾸 toast 띄움
-                            //Toast_wrong_id(check_username)
-                        }
-
-                    }
-                }
-            }
-
-            override fun onCancelled(error: DatabaseError) {
-                println("Failed to read value.")
-            }
-        })
-
-        println("테스트- check_ID 함수 val_PW: $val_PW")
-        return val_PW
+            Toast.makeText(this, "Wrong ID or PW ", Toast.LENGTH_SHORT).show()
     }
 
-    private fun check_PW(): Boolean {
-        check_userpw = false
-
-
-        firebaseRef.child(username).child("info").child("pw")
-            .addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-
-                    val value = snapshot.value
-
-                    if (value == userpw) {
-                        check_userpw = true
-                        println("테스트- check_PW 함수 while 안 val_PW: $check_userpw ")
-                        //intent()
-                        //intent 함수
-                        //println("테스트4 pw 성공")
-                    } else {
-                        // tf 보낼꺼 생각하기
-                        //Toast_wrong_pw(check_userpw)
-                    }
-                }
-
-                override fun onCancelled(error: DatabaseError) {
-                    println("Failed to read value.")
-                }
-            })
-        println("테스트- check_ID 함수 username: $check_userpw")
-
-        return check_userpw
-    }
-
-    private fun Toast_wrong_id(check_username: Boolean) {
-        if (!check_username)
-            Toast.makeText(this, "Wrong ID ", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun Toast_wrong_pw(check_userpw: Boolean) {
-        if (!check_userpw)
-            Toast.makeText(this, "Wrong PW ", Toast.LENGTH_SHORT).show()
-    }
 
     private fun intent() {
         val intent = Intent(this, CallActivity::class.java)
@@ -244,16 +159,4 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun setID() {
-        // firebaseRef.child(nameTest).child("test").setValue("success")
-        firebaseRef = Firebase.database.getReference("$username")
-        firebaseRef.child("TEST").setValue("success")
-
-        /*
-        firebaseRef.child("A").child("test").setValue("success")
-        firebaseRef.child("B").child("test").setValue("success")
-        firebaseRef.child("C").child("test").setValue("success")
-        */
-
-    }
 }

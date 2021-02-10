@@ -13,7 +13,7 @@ let peer //잘은 모르겠지만 peerjs.js파일에 존재하는 녀석..!
 // 웹의 콘솔에서 우리가 init("A")로 입력하면 peerjs서버에서 클라이언트 연결되었다고 할때 그것!
 function init(userId) {
     peer = new Peer(userId, {
-        host: '172.20.10.10',
+        host: '10.40.242.61',
         port: 9000,
         path: '/videocallapp'
     })
