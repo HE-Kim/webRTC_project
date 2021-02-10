@@ -13,6 +13,12 @@
         android:layout_height="wrap_content"
         android:hint="Enter a username"
         android:id="@+id/usernameEdit" />
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter a password"
+        android:inputType="textPassword"
+        android:id="@+id/userpwEdit" />
 
     <Button
         android:layout_width="match_parent"

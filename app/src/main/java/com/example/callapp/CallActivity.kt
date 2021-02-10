@@ -20,10 +20,10 @@ import java.util.*
 
 class CallActivity : AppCompatActivity() {
 
-    
+
     var username = ""
     var friendsUsername = ""
-    var addUsername=""
+    var addUsername = ""
     var uniqueId = ""
 
     var isPeerConnected = false
@@ -33,7 +33,6 @@ class CallActivity : AppCompatActivity() {
     // 오디오, 비디오 컨트롤하는 녀석
     var isAudio = true
     var isVideo = true
-
 
 
     val LIST_MENU: MutableList<String> = mutableListOf<String>("")
@@ -47,22 +46,25 @@ class CallActivity : AppCompatActivity() {
         listview.adapter = adapter
 
         username = intent.getStringExtra("username")!!
-        if(username!="") {
-            firebaseRef = Firebase.database.getReference("$username")
-        }
+//        if(username!="") {
+//            firebaseRef.child("$username").setValue("success")
+//           //firebaseRef = Firebase.database.getReference("$username")
+//        }
         // firebaseRef = Firebase.database.getReference("$username")
 
 
-        initID()
+        //  initID()
         initDatabase(listview, adapter)
-        uniqueId = getUniqueID()
-        firebaseRef.child("UUID").setValue(uniqueId)
+      //  uniqueId = getUniqueID()
+        //   firebaseRef.child("UUID").setValue(uniqueId)
 
 
+        //친구 추가 버튼
+        //DB에서 가져오는 거를 해야함
         callBtn.setOnClickListener {
             addUsername = friendNameEdit.text.toString()
-            firebaseRef.child("$addUsername").child("test").setValue("success")
-         //   sendCallRequest()
+            firebaseRef.child(username).child("info").child("friends").child(addUsername).child("test").setValue("success")
+            //   sendCallRequest()
         }
 
         toggleAudioBtn.setOnClickListener {
@@ -83,20 +85,20 @@ class CallActivity : AppCompatActivity() {
     private fun initID() {
 
         //임의로 넣은 값들, test 이후 변경 예정
-        if(username!="A")
+        if (username != "A")
             firebaseRef.child("friends").child("A").child("test").setValue("success")
-   //     firebaseRef.child("friends").child("test").setValue("success")
+        //     firebaseRef.child("friends").child("test").setValue("success")
 
-        if(username!="B")
-        firebaseRef.child("friends").child("B").child("test").setValue("success")
+        if (username != "B")
+            firebaseRef.child("friends").child("B").child("test").setValue("success")
 
-        if(username!="C")
-        firebaseRef.child("friends").child("C").child("test").setValue("success")
+        if (username != "C")
+            firebaseRef.child("friends").child("C").child("test").setValue("success")
 
         firebaseRef.child("info").child("outgoing").setValue("none") // 발신
         firebaseRef.child("info").child("receive").setValue("none") // 수신
         firebaseRef.child("info").child("isAvailable").setValue(true) // 연결 가능 여부
-        firebaseRef.child("info").child("name").setValue("$username") // 이름 = username
+        firebaseRef.child("info").child("name").setValue(username) // 이름 = username
 
         firebaseRef.child("TEST").setValue(null)
 
@@ -104,12 +106,12 @@ class CallActivity : AppCompatActivity() {
 
     //리스트뷰 업데이트
     private fun initDatabase(listview: ListView, adapter: ArrayAdapter<String>) {
-        firebaseRef.child("friends").addValueEventListener(object : ValueEventListener {
+        firebaseRef.child(username).child("info").child("friends").addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 LIST_MENU.clear()
-              //  LIST_MENU.remove("")
+
                 val children = snapshot.children.iterator()
-                var key:String?
+                var key: String?
 
                 while (children.hasNext()) { // 다음 값이 있으면
                     key = children.next().key // 다음 데이터 반환
@@ -117,7 +119,7 @@ class CallActivity : AppCompatActivity() {
                         LIST_MENU.add(key)
                     }
                 }
-               
+
                 initList(listview, adapter)
             }
 
@@ -125,8 +127,6 @@ class CallActivity : AppCompatActivity() {
                 println("Failed to read value.")
             }
         })
-
-
 
 
     }
@@ -144,7 +144,8 @@ class CallActivity : AppCompatActivity() {
             override fun onItemClick(parent: AdapterView<*>, v: View, position: Int, id: Long) {
                 // get TextView's Text.
                 val strText = parent.getItemAtPosition(position) as String
-                friendsUsername=strText
+                friendsUsername = strText
+                println("테스트 friend name: $friendsUsername")
                 sendCallRequest()
             }
         }
@@ -156,7 +157,11 @@ class CallActivity : AppCompatActivity() {
             Toast.makeText(this, "You're not connected. Check your internet", LENGTH_LONG).show()
             return
         }
-        firebaseRef.child(friendsUsername).child("incoming").setValue(username)
+      //  firebaseRef.child(friendsUsername).child("incoming").setValue(username)
+        firebaseRef.child(username).child("info").child("outgoing").setValue(friendsUsername) // 발신
+        firebaseRef.child(friendsUsername).child("info").child("receive").setValue(username) // 수신
+    //    firebaseRef.child(username).child("info").child("receive").setValue(friendsUsername) // 수신
+
         firebaseRef.child(friendsUsername).child("isAvailable").addValueEventListener(object :
             ValueEventListener {
             override fun onCancelled(error: DatabaseError) {}
@@ -173,8 +178,9 @@ class CallActivity : AppCompatActivity() {
 
     }
 
+    //connid 수정
     private fun listenForConnId() {
-        firebaseRef.child(friendsUsername).child("connId").addValueEventListener(object :
+        firebaseRef.child(friendsUsername).child("UUID").addValueEventListener(object :
             ValueEventListener {
             override fun onCancelled(error: DatabaseError) {}
 
@@ -191,7 +197,7 @@ class CallActivity : AppCompatActivity() {
     @SuppressLint("SetJavaScriptEnabled")
     private fun setupWebView() {
         // 웹뷰한테 ask한다 allow 할것인지(웹페이지)
-        webView.webChromeClient = object: WebChromeClient() {
+        webView.webChromeClient = object : WebChromeClient() {
             override fun onPermissionRequest(request: PermissionRequest?) { // for this permission!
                 request?.grant(request.resources)
             }
@@ -208,7 +214,7 @@ class CallActivity : AppCompatActivity() {
         val filePath = "file:android_asset/call.html"  //html 불러오기!
         webView.loadUrl(filePath) // url(html) load한다
 
-        webView.webViewClient = object: WebViewClient() {
+        webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
                 initializePeer()
             }
@@ -216,18 +222,31 @@ class CallActivity : AppCompatActivity() {
     }
 
 
-
     private fun initializePeer() {
-       // uniqueId = getUniqueID()
+        // uniqueId = getUniqueID()
+
+
+        firebaseRef.child(username).child("UUID").addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    val value = snapshot.value
+                    uniqueId= value as String
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    println("Failed to read value.")
+                }
+            })
+
         println("유니크아이디 : $uniqueId")
 
         callJavascriptFunction("javascript:init(\"${uniqueId}\")")
-        firebaseRef.child(username).child("incoming").addValueEventListener(object :
+        firebaseRef.child(username).child("info").child("receive").addValueEventListener(object :
             ValueEventListener {
             override fun onCancelled(error: DatabaseError) {}
 
             override fun onDataChange(snapshot: DataSnapshot) {
-                onCallRequest(snapshot.value as? String)
+                if(snapshot.value!="none")
+                    onCallRequest(snapshot.value as? String)
             }
 
         })
@@ -242,8 +261,8 @@ class CallActivity : AppCompatActivity() {
 
         // 파이어 베이스로 보내는 녀석들~
         acceptBtn.setOnClickListener {
-            firebaseRef.child(username).child("connId").setValue(uniqueId)
-            firebaseRef.child(username).child("isAvailable").setValue(true)
+            //firebaseRef.child(username).child("connId").setValue(uniqueId)
+            firebaseRef.child(username).child("info").child("isAvailable").setValue(true)
 
 
 
@@ -253,7 +272,7 @@ class CallActivity : AppCompatActivity() {
 
         // reject 했을 때 incoming value를 없애야함
         rejectBtn.setOnClickListener {
-            firebaseRef.child(username).child("incoming").setValue(null)
+            firebaseRef.child(username).child("info").child("receive").setValue("none")
             callLayout.visibility = View.GONE
         }
 
@@ -272,7 +291,6 @@ class CallActivity : AppCompatActivity() {
     }
 
 
-
     private fun callJavascriptFunction(functionString: String) {
         webView.post { webView.evaluateJavascript(functionString, null) }
     }
@@ -287,10 +305,11 @@ class CallActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-      //  firebaseRef.child(username).setValue(null)
-        firebaseRef.child(username).child("incoming").setValue(null)
-        firebaseRef.child(username).child("connId").setValue(null)
-        firebaseRef.child(username).child(" isAvailable").setValue(null)
+        //  firebaseRef.child(username).setValue(null)
+        firebaseRef.child(username).child("info").child("receive").setValue("none")
+        firebaseRef.child(username).child("info").child("outgoing").setValue("none")
+      //  firebaseRef.child(username).child("info").child("connId").setValue("none")
+        firebaseRef.child(username).child("info").child(" isAvailable").setValue("none")
         webView.loadUrl("about:blank")
         super.onDestroy()
     }

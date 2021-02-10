@@ -109,7 +109,8 @@ class joinActivity : AppCompatActivity() {
                 firebaseRef.child("$userID").child("UUID").setValue("$UUID")
                 firebaseRef.child("$userID").child("info").child("outgoing").setValue("none") // 발신
                 firebaseRef.child("$userID").child("info").child("receive").setValue("none") // 수신
-
+                firebaseRef.child("$userID").child("info").child("friends").setValue("none") // 친구
+                firebaseRef.child("$userID").child("info").child("isAvailable").setValue("none") // 가능한지
                 val intent = Intent(this, MainActivity::class.java)
                 intent.putExtra("username", username)
                 startActivity(intent)
@@ -130,6 +131,7 @@ class joinActivity : AppCompatActivity() {
         else {
             println("테스트 key:  else 진입")
 
+            //유저로 잡힘
             firebaseRef.addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val children = snapshot.children.iterator()
