@@ -159,10 +159,10 @@ class CallActivity : AppCompatActivity() {
         }
       //  firebaseRef.child(friendsUsername).child("incoming").setValue(username)
         firebaseRef.child(username).child("info").child("outgoing").setValue(friendsUsername) // 발신
-        firebaseRef.child(friendsUsername).child("info").child("receive").setValue(username) // 수신
+        firebaseRef.child(friendsUsername).child("info").child("receive").setValue(username) // 수신 == incoming
     //    firebaseRef.child(username).child("info").child("receive").setValue(friendsUsername) // 수신
 
-        firebaseRef.child(friendsUsername).child("isAvailable").addValueEventListener(object :
+        firebaseRef.child(friendsUsername).child("info").child("isAvailable").addValueEventListener(object :
             ValueEventListener {
             override fun onCancelled(error: DatabaseError) {}
 
@@ -230,6 +230,8 @@ class CallActivity : AppCompatActivity() {
                 override fun onDataChange(snapshot: DataSnapshot) {
                     val value = snapshot.value
                     uniqueId= value as String
+
+                    callJavascriptFunction("javascript:init(\"${uniqueId}\")")
                 }
 
                 override fun onCancelled(error: DatabaseError) {
@@ -237,9 +239,11 @@ class CallActivity : AppCompatActivity() {
                 }
             })
 
+
+        //유니크 아이디가 firebase안에 있으면 ""로 나옴 결국 피어 인잇 불가능 ㅠㅠ
         println("유니크아이디 : $uniqueId")
 
-        callJavascriptFunction("javascript:init(\"${uniqueId}\")")
+      //  callJavascriptFunction("javascript:init(\"${uniqueId}\")")
         firebaseRef.child(username).child("info").child("receive").addValueEventListener(object :
             ValueEventListener {
             override fun onCancelled(error: DatabaseError) {}
@@ -254,7 +258,7 @@ class CallActivity : AppCompatActivity() {
     }
 
     private fun onCallRequest(caller: String?) {
-        if (caller == null) return
+        if (caller == null || caller == "none") return
 
         callLayout.visibility = View.VISIBLE
         incomingCallTxt.text = "$caller is calling..."
@@ -273,6 +277,7 @@ class CallActivity : AppCompatActivity() {
         // reject 했을 때 incoming value를 없애야함
         rejectBtn.setOnClickListener {
             firebaseRef.child(username).child("info").child("receive").setValue("none")
+            firebaseRef.child(friendsUsername).child("info").child("outgoing").setValue("none")
             callLayout.visibility = View.GONE
         }
 
@@ -306,8 +311,10 @@ class CallActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         //  firebaseRef.child(username).setValue(null)
-        firebaseRef.child(username).child("info").child("receive").setValue("none")
-        firebaseRef.child(username).child("info").child("outgoing").setValue("none")
+      //  firebaseRef.child(username).child("info").child("receive").setValue("none")
+     //   firebaseRef.child(username).child("info").child("outgoing").setValue("none")
+        firebaseRef.child(username).child("info").child("outgoing").setValue("none") // 발신
+        firebaseRef.child(friendsUsername).child("info").child("receive").setValue("none") // 수신
       //  firebaseRef.child(username).child("info").child("connId").setValue("none")
         firebaseRef.child(username).child("info").child(" isAvailable").setValue("none")
         webView.loadUrl("about:blank")

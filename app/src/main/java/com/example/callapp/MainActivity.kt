@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity() {
                     val children = snapshot.children.iterator()
                     var key: String?
                     check_username = false
-                    check_userpw = false
+                   // check_userpw = false
 
                     while (children.hasNext()) { // 다음 값이 있으면
                         key = children.next().key // 다음 데이터 반환
@@ -91,8 +91,9 @@ class MainActivity : AppCompatActivity() {
 
                                             val value = snapshot.value
 
-                                            if (value == userpw) {
+                                            if (value == userpw && !check_userpw) {
                                                 check_userpw=true
+
                                                 intent()
 
                                             } else {
@@ -103,7 +104,7 @@ class MainActivity : AppCompatActivity() {
                                             println("Failed to read value.")
                                         }
                                     })
-                                break;
+                                break
                             }
 
                         }
@@ -120,6 +121,8 @@ class MainActivity : AppCompatActivity() {
 
             println("테스트2 check_username : $check_username")
 
+           // intent()
+
         }
 
 
@@ -133,6 +136,8 @@ class MainActivity : AppCompatActivity() {
 
 
     private fun intent() {
+       // userpw=""
+       // username=""
         val intent = Intent(this, CallActivity::class.java)
         intent.putExtra("username", username)
         //   intent.putExtra("userpw", userpw)
