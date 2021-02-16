@@ -36,6 +36,7 @@ class CallActivity : AppCompatActivity() {
 
 
     val LIST_MENU: MutableList<String> = mutableListOf<String>("")
+    val arrList: MutableList<String> = mutableListOf<String>("")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,25 +47,21 @@ class CallActivity : AppCompatActivity() {
         listview.adapter = adapter
 
         username = intent.getStringExtra("username")!!
-//        if(username!="") {
-//            firebaseRef.child("$username").setValue("success")
-//           //firebaseRef = Firebase.database.getReference("$username")
-//        }
-        // firebaseRef = Firebase.database.getReference("$username")
 
 
-        //  initID()
+
+
         initDatabase(listview, adapter)
-      //  uniqueId = getUniqueID()
-        //   firebaseRef.child("UUID").setValue(uniqueId)
+
 
 
         //친구 추가 버튼
         //DB에서 가져오는 거를 해야함
         callBtn.setOnClickListener {
             addUsername = friendNameEdit.text.toString()
-            firebaseRef.child(username).child("info").child("friends").child(addUsername).child("test").setValue("success")
+           // firebaseRef.child(username).child("info").child("friends").child(addUsername).child("test").setValue("success")
             //   sendCallRequest()
+            Addfriend(addUsername)
         }
 
         toggleAudioBtn.setOnClickListener {
@@ -81,27 +78,50 @@ class CallActivity : AppCompatActivity() {
 
         setupWebView()
     }
+    private fun Addfriend(addUsername: String) {
 
-    private fun initID() {
+        firebaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val children = snapshot.children.iterator()
+                var key: String?
+                arrList.clear()
 
-        //임의로 넣은 값들, test 이후 변경 예정
-        if (username != "A")
-            firebaseRef.child("friends").child("A").child("test").setValue("success")
-        //     firebaseRef.child("friends").child("test").setValue("success")
+                while (children.hasNext()) { // 다음 값이 있으면
+                    key = children.next().key // 다음 데이터 반환
 
-        if (username != "B")
-            firebaseRef.child("friends").child("B").child("test").setValue("success")
+                    if (!key.isNullOrEmpty()) {
+                        arrList.add(key)
+                    }
+                }
+                check_friend(arrList)
+                return
+            }
+            override fun onCancelled(error: DatabaseError) {
+                println("Failed to read value.")
+            }
+        })
 
-        if (username != "C")
-            firebaseRef.child("friends").child("C").child("test").setValue("success")
 
-        firebaseRef.child("info").child("outgoing").setValue("none") // 발신
-        firebaseRef.child("info").child("receive").setValue("none") // 수신
-        firebaseRef.child("info").child("isAvailable").setValue(true) // 연결 가능 여부
-        firebaseRef.child("info").child("name").setValue(username) // 이름 = username
+    }
+    private fun check_friend(arrList: MutableList<String>) {
+        if (!arrList.contains(addUsername)) {
+            Toast.makeText(this, "등록되지 않은 ID입니다.", Toast.LENGTH_SHORT).show()
+        }
+        else
+        {
+            firebaseRef.child(addUsername).child("UUID").addListenerForSingleValueEvent(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                   // println("친구 UUID: ${snapshot.value}")
+                    firebaseRef.child(username).child("info").child("friends").child(addUsername).child("UUID").setValue(snapshot.value)
 
-        firebaseRef.child("TEST").setValue(null)
+                }
+                override fun onCancelled(error: DatabaseError) {
+                    println("Failed to read value.")
+                }
+            })
 
+            Toast.makeText(this, "추가되었습니다.", Toast.LENGTH_SHORT).show()
+        }
     }
 
     //리스트뷰 업데이트

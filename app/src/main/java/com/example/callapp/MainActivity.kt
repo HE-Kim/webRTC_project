@@ -58,21 +58,18 @@ class MainActivity : AppCompatActivity() {
 
 
             if (username == "") {
-                Toast.makeText(this, "You did not enter ID", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "ID를 입력하세요.", Toast.LENGTH_SHORT).show()
             }
             if (userpw == "") {
-                Toast.makeText(this, "You did not enter PW", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "비밀번호를 입력하세요.", Toast.LENGTH_SHORT).show()
             }
 
             println("테스트1 check_username : $check_username")
 
 
 
-            firebaseRef.addValueEventListener(object : ValueEventListener {
+            firebaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-
-                    println("테스트- 파에어베이스 진입")
-
                     val children = snapshot.children.iterator()
                     var key: String?
                     check_username = false
@@ -131,7 +128,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun Toast_wrong(){
 
-            Toast.makeText(this, "Wrong ID or PW ", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "잘못된 ID 혹은 비밀번호입니다.", Toast.LENGTH_SHORT).show()
     }
 
 

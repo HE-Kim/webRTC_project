@@ -63,7 +63,7 @@ class joinActivity : AppCompatActivity() {
 
 
         if (userID == "")
-            Toast.makeText(this, "You did not enter ID", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "ID를 입력하세요.", Toast.LENGTH_SHORT).show()
         else {
 
             firebaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -96,7 +96,7 @@ class joinActivity : AppCompatActivity() {
     private fun check_overlap(arrList: MutableList<String>) {
 
         if (arrList.contains(userID)) {
-            Toast.makeText(this, "Your ID is overlapped.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "중복된 ID 입니다.", Toast.LENGTH_SHORT).show()
 
         } else {
             check_id = true
@@ -119,7 +119,7 @@ class joinActivity : AppCompatActivity() {
 
     private fun userPw_check() {
         if (userpw == "")
-            Toast.makeText(this, "You did not enter password", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "비밀번호를 입력하세요.", Toast.LENGTH_SHORT).show()
         else if (check_id == true) {
             firebaseRef.child("$userID").child("info").child("pw").setValue("$userpw")
             check_pw = true
@@ -129,7 +129,7 @@ class joinActivity : AppCompatActivity() {
 
     private fun username_check() {
         if (username == "")
-            Toast.makeText(this, "You did not enter name", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "이름을 입력하세요", Toast.LENGTH_SHORT).show()
         else if (check_id == true) {
             firebaseRef.child("$userID").child("info").child("username").setValue("$username")
             check_name = true
