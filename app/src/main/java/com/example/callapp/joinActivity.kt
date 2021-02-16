@@ -19,7 +19,7 @@ class joinActivity : AppCompatActivity() {
     var firebaseRef = Firebase.database.getReference("users")
 
     var uniqueId = ""
-    var overlapID = false // f==중복x, t==중복o
+
 
     var userID = ""
     var username = ""
@@ -49,7 +49,7 @@ class joinActivity : AppCompatActivity() {
             check_id = false
             check_name = false
             check_pw = false
-            overlapID = false
+
 
             userID_check()
         }
@@ -59,7 +59,7 @@ class joinActivity : AppCompatActivity() {
 
     //중복되는 부분 해결해야함
     private fun userID_check() {
-        overlapID = false
+
 
 
         if (userID == "")
