@@ -177,10 +177,9 @@ class CallActivity : AppCompatActivity() {
             Toast.makeText(this, "You're not connected. Check your internet", LENGTH_LONG).show()
             return
         }
-      //  firebaseRef.child(friendsUsername).child("incoming").setValue(username)
+
         firebaseRef.child(username).child("info").child("outgoing").setValue(friendsUsername) // 발신
         firebaseRef.child(friendsUsername).child("info").child("receive").setValue(username) // 수신 == incoming
-    //    firebaseRef.child(username).child("info").child("receive").setValue(friendsUsername) // 수신
 
         firebaseRef.child(friendsUsername).child("info").child("isAvailable").addValueEventListener(object :
             ValueEventListener {
@@ -188,7 +187,7 @@ class CallActivity : AppCompatActivity() {
 
             override fun onDataChange(snapshot: DataSnapshot) {
 
-                if (snapshot.value.toString() == "true") {
+                if (snapshot.value.toString() == "true" && snapshot.value.toString() != "none" ) {
                     listenForConnId()
                 }
 
@@ -285,10 +284,7 @@ class CallActivity : AppCompatActivity() {
 
         // 파이어 베이스로 보내는 녀석들~
         acceptBtn.setOnClickListener {
-            //firebaseRef.child(username).child("connId").setValue(uniqueId)
             firebaseRef.child(username).child("info").child("isAvailable").setValue(true)
-
-
 
             callLayout.visibility = View.GONE
             switchToControls()
@@ -330,13 +326,10 @@ class CallActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        //  firebaseRef.child(username).setValue(null)
-      //  firebaseRef.child(username).child("info").child("receive").setValue("none")
-     //   firebaseRef.child(username).child("info").child("outgoing").setValue("none")
+
         firebaseRef.child(username).child("info").child("outgoing").setValue("none") // 발신
         firebaseRef.child(friendsUsername).child("info").child("receive").setValue("none") // 수신
-      //  firebaseRef.child(username).child("info").child("connId").setValue("none")
-        firebaseRef.child(username).child("info").child(" isAvailable").setValue("none")
+        firebaseRef.child(username).child("info").child("isAvailable").setValue("none")
         webView.loadUrl("about:blank")
         super.onDestroy()
     }
