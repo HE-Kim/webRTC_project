@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AddActivity">
+
+    <TextView
+        android:id="@+id/text2"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="15dp"
+        android:gravity="center_horizontal"
+        android:text="STB-APP 페어링"
+        android:textSize="25dp" />
+
+    <LinearLayout
+        android:id="@+id/Verifylayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:orientation="vertical"
+        android:text="Show Toast"
+
+        >
+
+        <EditText
+            android:id="@+id/VerifyEdit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="인증번호를 입력하세요."
+            android:textSize="20dp"
+            android:layout_gravity="center"
+            android:layout_margin="12dp"/>
+
+        <Button
+            android:id="@+id/Btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBaseline="@id/text1"
+            android:layout_margin="20dp"
+            android:text="확인" />
+    </LinearLayout>
+</RelativeLayout>

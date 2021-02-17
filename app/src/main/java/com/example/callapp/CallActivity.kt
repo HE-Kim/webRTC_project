@@ -1,6 +1,7 @@
 package com.example.callapp
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.webkit.*
@@ -58,10 +59,13 @@ class CallActivity : AppCompatActivity() {
         //친구 추가 버튼
         //DB에서 가져오는 거를 해야함
         callBtn.setOnClickListener {
-            addUsername = friendNameEdit.text.toString()
+            addUsername //= friendNameEdit.text.toString()
            // firebaseRef.child(username).child("info").child("friends").child(addUsername).child("test").setValue("success")
             //   sendCallRequest()
-            Addfriend(addUsername)
+           // Addfriend(addUsername)
+            val intent = Intent(this, AddActivity::class.java)
+            intent.putExtra("username", username)
+            startActivity(intent)
         }
 
         toggleAudioBtn.setOnClickListener {

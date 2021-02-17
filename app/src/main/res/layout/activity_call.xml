@@ -48,12 +48,6 @@
         android:layout_alignParentBottom="true"
         android:id="@+id/inputLayout">
 
-        <EditText
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/friendNameEdit"
-            android:layout_toStartOf="@id/callBtn"
-            android:hint="Who do you want to call?" />
 
 
         <Button

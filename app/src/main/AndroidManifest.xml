@@ -15,8 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true">
-        <activity android:name=".joinActivity"></activity>
-        <!-- http, https 어쩌구를 위해 -->
+        <activity android:name=".AddActivity"></activity>
+        <activity android:name=".joinActivity" /> <!-- http, https 어쩌구를 위해 -->
         <activity
             android:name=".CallActivity"
             android:theme="@style/AppTheme.fullscreen" />
