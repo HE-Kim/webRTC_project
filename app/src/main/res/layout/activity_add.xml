@@ -6,40 +6,86 @@
     android:layout_height="match_parent"
     tools:context=".AddActivity">
 
-    <TextView
-        android:id="@+id/text2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="15dp"
-        android:gravity="center_horizontal"
-        android:text="STB-APP 페어링"
-        android:textSize="25dp" />
-
     <LinearLayout
-        android:id="@+id/Verifylayout"
+        android:id="@+id/textlayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_centerVertical="true"
+
         android:orientation="vertical"
-        android:text="Show Toast"
+        android:text="Show Toast">
 
-        >
-
-        <EditText
-            android:id="@+id/VerifyEdit"
+        <TextView
+            android:id="@+id/text2"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="인증번호를 입력하세요."
-            android:textSize="20dp"
-            android:layout_gravity="center"
-            android:layout_margin="12dp"/>
+            android:layout_margin="15dp"
+            android:gravity="center_horizontal"
+            android:text="STB-APP 페어링"
+            android:textSize="25dp" />
 
-        <Button
-            android:id="@+id/Btn"
+
+        <LinearLayout
+            android:id="@+id/Verifylayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_alignBaseline="@id/text1"
-            android:layout_margin="20dp"
-            android:text="확인" />
+            android:layout_centerVertical="true"
+            android:orientation="vertical"
+            android:text="Show Toast"
+            >
+
+            <EditText
+                android:id="@+id/VerifyEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="12dp"
+                android:hint="인증번호를 입력하세요."
+                android:textSize="20dp" />
+
+            <Button
+                android:id="@+id/Btn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@id/text1"
+                android:layout_margin="20dp"
+                android:text="확인" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/infolayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:orientation="vertical"
+            android:text="Show Toast"
+            android:visibility="gone">
+
+            <EditText
+                android:id="@+id/nameEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="12dp"
+                android:hint="TV에 보여질 이름을 입력하세요."
+                android:textSize="20dp" />
+            <EditText
+                android:id="@+id/channelEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_margin="12dp"
+                android:hint="채널을 입력하세요."
+                android:textSize="20dp" />
+
+            <Button
+                android:id="@+id/infoBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@id/text1"
+                android:layout_margin="20dp"
+                android:text="확인" />
+
+        </LinearLayout>
     </LinearLayout>
+
 </RelativeLayout>
