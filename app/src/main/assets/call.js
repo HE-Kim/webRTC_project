@@ -9,13 +9,15 @@ remoteVideo.style.opacity = 0
 localVideo.onplaying = () => { localVideo.style.opacity = 1 }  //프라이머리
 remoteVideo.onplaying = () => { remoteVideo.style.opacity = 1 } //세컨더리
 
+//location.href="https://13.125.233.161:8443/"
+
 let peer //잘은 모르겠지만 peerjs.js파일에 존재하는 녀석..!
 // 웹의 콘솔에서 우리가 init("A")로 입력하면 peerjs서버에서 클라이언트 연결되었다고 할때 그것!
 function init(userId) {
     peer = new Peer(userId, {
-        host: '172.30.1.45',
-        port: 9000,
-        path: '/videocallapp'
+        host: '13.125.233.161',
+        port: 8443,
+        path: '/'
     })
 
     peer.on('open', () => {

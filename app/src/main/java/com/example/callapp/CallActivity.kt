@@ -2,6 +2,7 @@ package com.example.callapp
 
 import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.http.SslError
 import android.os.Bundle
 import android.view.View
 import android.webkit.*
@@ -52,7 +53,7 @@ class CallActivity : AppCompatActivity() {
         username = intent.getStringExtra("username")!!
 
 
-
+        onPeerConnected()
 
         initDatabase(listview, adapter)
 
@@ -62,9 +63,9 @@ class CallActivity : AppCompatActivity() {
         //DB에서 가져오는 거를 해야함
         callBtn.setOnClickListener {
             addUsername //= friendNameEdit.text.toString()
-           // firebaseRef.child(username).child("info").child("friends").child(addUsername).child("test").setValue("success")
+            // firebaseRef.child(username).child("info").child("friends").child(addUsername).child("test").setValue("success")
             //   sendCallRequest()
-           // Addfriend(addUsername)
+            // Addfriend(addUsername)
             val intent = Intent(this, AddActivity::class.java)
             intent.putExtra("username", username)
             startActivity(intent)
@@ -139,7 +140,7 @@ class CallActivity : AppCompatActivity() {
         {
             firebaseRef.child(addUsername).child("UUID").addListenerForSingleValueEvent(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
-                   // println("친구 UUID: ${snapshot.value}")
+                    // println("친구 UUID: ${snapshot.value}")
                     firebaseRef.child(username).child("info").child("friends").child(addUsername).child("UUID").setValue(snapshot.value)
 
                 }
@@ -182,9 +183,7 @@ class CallActivity : AppCompatActivity() {
     private fun initList(listview: ListView, adapter: ArrayAdapter<String>) {
 /*
         val listview = findViewById<ListView>(R.id.IdListview)
-
         val adapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, LIST_MENU)
-
         listview.adapter = adapter
 */
         adapter.notifyDataSetChanged()
@@ -227,7 +226,10 @@ class CallActivity : AppCompatActivity() {
 
     //connid 수정
     private fun listenForConnId() {
-        firebaseRef.child(friendsUsername).child("UUID").addValueEventListener(object :
+        switchToControls()
+        callJavascriptFunction("javascript:call(\"${friendsUsername}\")")
+
+        /*firebaseRef.child(friendsUsername).child("UUID").addValueEventListener(object :
             ValueEventListener {
             override fun onCancelled(error: DatabaseError) {}
 
@@ -238,7 +240,7 @@ class CallActivity : AppCompatActivity() {
                 callJavascriptFunction("javascript:startCall(\"${snapshot.value}\")")
             }
 
-        })
+        })*/
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -258,12 +260,29 @@ class CallActivity : AppCompatActivity() {
     }
 
     private fun loadVideoCall() {
-        val filePath = "file:android_asset/call.html"  //html 불러오기!
-        webView.loadUrl(filePath) // url(html) load한다
+       // val filePath = "file:android_asset/call.html"  //html 불러오기!
+        //webView.loadUrl(filePath) // url(html) load한다
+        webView.loadUrl("https://13.125.233.161:8443/call.html")
 
         webView.webViewClient = object : WebViewClient() {
             override fun onPageFinished(view: WebView?, url: String?) {
+                println("웹뷰: webViewClient ")
                 initializePeer()
+            }
+            override fun onReceivedSslError(
+                view: WebView?,
+                handler: SslErrorHandler,
+                error: SslError?
+            ) {
+                handler.proceed() // Ignore SSL certificate errors
+            }
+
+            override fun shouldOverrideUrlLoading(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): Boolean {
+                view?.loadUrl(request?.getUrl().toString());
+                return true;
             }
         }
     }
@@ -273,24 +292,26 @@ class CallActivity : AppCompatActivity() {
         // uniqueId = getUniqueID()
 
 
-        firebaseRef.child(username).child("UUID").addValueEventListener(object : ValueEventListener {
-                override fun onDataChange(snapshot: DataSnapshot) {
-                    val value = snapshot.value
-                    uniqueId= value as String
+        callJavascriptFunction("javascript:register(\"${username}\")")
 
-                    callJavascriptFunction("javascript:init(\"${uniqueId}\")")
-                }
+      /*  firebaseRef.child(username).child("UUID").addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val value = snapshot.value
+                uniqueId= value as String
 
-                override fun onCancelled(error: DatabaseError) {
-                    println("Failed to read value.")
-                }
-            })
+               // callJavascriptFunction("javascript:init(\"${uniqueId}\")")
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                println("Failed to read value.")
+            }
+        })*/
 
 
         //유니크 아이디가 firebase안에 있으면 ""로 나옴 결국 피어 인잇 불가능 ㅠㅠ
         println("유니크아이디 : $uniqueId")
 
-      //  callJavascriptFunction("javascript:init(\"${uniqueId}\")")
+        //  callJavascriptFunction("javascript:init(\"${uniqueId}\")")
         firebaseRef.child(username).child("info").child("receive").addValueEventListener(object :
             ValueEventListener {
             override fun onCancelled(error: DatabaseError) {}
@@ -331,6 +352,7 @@ class CallActivity : AppCompatActivity() {
     private fun switchToControls() {
         inputLayout.visibility = View.GONE
         listviewlayout.visibility = View.GONE
+        webView.visibility = View.VISIBLE
         callControlLayout.visibility = View.VISIBLE
 
         firebaseRef.child("$username").child("info").child("connection").setValue(true) // 가능한지
@@ -361,11 +383,11 @@ class CallActivity : AppCompatActivity() {
     override fun onDestroy() {
 
         //firebaseRef.child(username).child("info").child("outgoing").setValue("none") // 발신
-      //  firebaseRef.child(friendsUsername).child("info").child("receive").setValue("none") // 수신
+        //  firebaseRef.child(friendsUsername).child("info").child("receive").setValue("none") // 수신
 
         //firebaseRef.child(username).child("info").child("isAvailable").setValue("none")
-       // firebaseRef.child(username).child("info").child("outgoing").setValue("none")
-       // firebaseRef.child(friendsUsername).child("info").child("receive").setValue("none")
+        // firebaseRef.child(username).child("info").child("outgoing").setValue("none")
+        // firebaseRef.child(friendsUsername).child("info").child("receive").setValue("none")
 
         firebaseRef.child(username).child("info").child("outgoing").setValue("none") // 발신
         firebaseRef.child(username).child("info").child("receive").setValue("none") // 발신
@@ -396,6 +418,6 @@ class CallActivity : AppCompatActivity() {
         inputLayout.visibility = View.VISIBLE
         listviewlayout.visibility = View.VISIBLE
         webView.loadUrl("about:blank")
-     ///   sendCallRequest()
+        ///   sendCallRequest()
     }
 }
