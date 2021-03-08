@@ -1,18 +1,38 @@
 package com.example.callapp
 
+import android.content.Context
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_join.*
+import okhttp3.OkHttpClient
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
+import java.io.IOException
+import java.io.InputStream
+import java.security.KeyManagementException
+import java.security.KeyStore
+import java.security.KeyStoreException
+import java.security.NoSuchAlgorithmException
+import java.security.cert.Certificate
+import java.security.cert.CertificateException
+import java.security.cert.CertificateFactory
+import java.security.cert.X509Certificate
 import java.util.*
+import javax.net.ssl.*
+
 
 class joinActivity : AppCompatActivity() {
 
@@ -36,9 +56,100 @@ class joinActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_join)
 
+
+
+        val cf = CertificateFactory.getInstance("X.509")
+        val caInput: InputStream = getResources().openRawResource(R.raw.server)
+        var ca: Certificate? = null
+        try {
+            ca = cf.generateCertificate(caInput)
+            println("ca=" + (ca as X509Certificate?)!!.subjectDN)
+        } catch (e: CertificateException) {
+            e.printStackTrace()
+        } finally {
+            caInput.close()
+        }
+        val keyStoreType = KeyStore.getDefaultType()
+        var keyStore = KeyStore.getInstance(keyStoreType)
+        keyStore.load(null, null)
+        if (ca == null) {
+
+        }
+        keyStore.setCertificateEntry("ca", ca)
+
+
+
+
+
         val userIdEdit = findViewById<View>(R.id.userIdEdit) as EditText
         val usernameEdit = findViewById<View>(R.id.usernameEdit) as EditText
         val userPwEdit = findViewById<View>(R.id.userPwEdit) as EditText
+        val trustManagerFactory =
+            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+        trustManagerFactory.init(keyStore)
+
+
+        val trustManagers: Array<TrustManager> = trustManagerFactory.trustManagers
+        check(!(trustManagers.size != 1 || trustManagers[0] !is X509TrustManager)) {
+            "Unexpected default trust managers:" + Arrays.toString(
+                trustManagers
+            )
+
+        }
+        val hostnameVerifier = HostnameVerifier { _, session ->
+            HttpsURLConnection.getDefaultHostnameVerifier().run {
+                verify("https://13.125.233.161:6443", session)
+            }
+        }
+        val trustManager: X509TrustManager = trustManagers[0] as X509TrustManager
+        val sslContext = SSLContext.getInstance("SSL")
+        sslContext.init(null, arrayOf<TrustManager>(trustManager), null)
+        val sslSocketFactory = sslContext.socketFactory
+        val client1: OkHttpClient.Builder = OkHttpClient.Builder()
+            .sslSocketFactory(sslSocketFactory, trustManager)
+
+
+
+        client1.hostnameVerifier(HostnameVerifier { hostname, session -> true })
+
+
+
+
+
+        val builder: Retrofit.Builder = Retrofit.Builder()
+            .baseUrl("https://13.125.233.161:6443/")
+            .client(client1.build())
+            .addConverterFactory(GsonConverterFactory.create())
+
+
+        val retrofit: Retrofit = builder.build()
+
+        val client: GitHubClient = retrofit.create(GitHubClient::class.java)
+
+        val call: Call<List<GitHubRepo>> = client.reposForUser("userReg")
+
+        call.enqueue(object : Callback<List<GitHubRepo>> {
+            override fun onFailure(call: Call<List<GitHubRepo>>, t: Throwable) {
+                Log.e("debugTest", "error:(${t.message})")
+            }
+
+            override fun onResponse(
+                call: Call<List<GitHubRepo>>,
+                response: Response<List<GitHubRepo>>
+            ) {
+                val repos: List<GitHubRepo>? = response.body()
+                var reposStr = ""
+
+                repos?.forEach { it ->
+                    reposStr += "$it\n"
+                }
+                println("로그: ${response.body().toString()}")
+
+                // textView.text = reposStr
+            }
+        })
+
+
 
         JoinBtn.setOnClickListener {
             //edittext 값이 다 들어갔는지 확인
@@ -56,8 +167,48 @@ class joinActivity : AppCompatActivity() {
 
     }
 
+    fun getPinnedCertSslSocketFactory(context: Context): SSLSocketFactory? {
+        try {
 
-    //중복되는 부분 해결해야함
+            val cf = CertificateFactory.getInstance("X.509")
+            val caInput: InputStream = getResources().openRawResource(R.raw.server)
+            var ca: Certificate? = null
+            try {
+                ca = cf.generateCertificate(caInput)
+                println("ca=" + (ca as X509Certificate?)!!.subjectDN)
+            } catch (e: CertificateException) {
+                e.printStackTrace()
+            } finally {
+                caInput.close()
+            }
+            val keyStoreType = KeyStore.getDefaultType()
+            val keyStore = KeyStore.getInstance(keyStoreType)
+            keyStore.load(null, null)
+            if (ca == null) {
+                return null
+            }
+            keyStore.setCertificateEntry("ca", ca)
+            val tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm()
+            val tmf = TrustManagerFactory.getInstance(tmfAlgorithm)
+            tmf.init(keyStore)
+            val sslContext = SSLContext.getInstance("TLS")
+            sslContext.init(null, tmf.trustManagers, null)
+            return sslContext.socketFactory
+        } catch (e: NoSuchAlgorithmException) {
+            e.printStackTrace()
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } catch (e: KeyStoreException) {
+            e.printStackTrace()
+        } catch (e: KeyManagementException) {
+            e.printStackTrace()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
+    }
+
+
     private fun userID_check() {
 
 
