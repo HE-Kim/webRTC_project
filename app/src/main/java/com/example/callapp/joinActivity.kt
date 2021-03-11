@@ -40,7 +40,7 @@ import javax.net.ssl.*
 interface CometChatFriendsService {
     @Headers("accept: application/json",
         "content-type: application/json")
-    @POST("/userReg?id=test1234&passwd=user1234!&role=50&name=테스트100&contact1=010&contact2=1111&contact3=2222")
+    @POST("/userReg?id=0test&passwd=user1234!&role=50&name=김하은100&contact1=010&contact2=3333&contact3=4444")
     fun addFriend(@Header("apikey") apiKey: String,
                   @Header("appid") appID: String,
                   @Body params: HashMap<String, List<String>>
@@ -48,7 +48,7 @@ interface CometChatFriendsService {
             : Call<Data>
 }
 
-data class Data(val data: Accepted)
+data class Data(val result: Accepted)
 data class Accepted(val accepted: HashMap<String, Friend>)
 data class Friend(val success: Boolean, val message: String)
 
@@ -81,7 +81,7 @@ class joinActivity : AppCompatActivity() {
         val usernameEdit = findViewById<View>(R.id.usernameEdit) as EditText
         val userPwEdit = findViewById<View>(R.id.userPwEdit) as EditText
         val cf = CertificateFactory.getInstance("X.509")
-        val caInput: InputStream = getResources().openRawResource(R.raw.server)
+        val caInput: InputStream = resources.openRawResource(R.raw.server)
         var ca: Certificate? = null
         try {
             ca = cf.generateCertificate(caInput)
