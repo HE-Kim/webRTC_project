@@ -1,5 +1,6 @@
 package com.example.callapp
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -13,6 +14,8 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_join.*
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -20,6 +23,7 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.*
 import java.io.IOException
 import java.io.InputStream
 import java.security.KeyManagementException
@@ -33,6 +37,20 @@ import java.security.cert.X509Certificate
 import java.util.*
 import javax.net.ssl.*
 
+interface CometChatFriendsService {
+    @Headers("accept: application/json",
+        "content-type: application/json")
+    @POST("/userReg?id=test1234&passwd=user1234!&role=50&name=테스트100&contact1=010&contact2=1111&contact3=2222")
+    fun addFriend(@Header("apikey") apiKey: String,
+                  @Header("appid") appID: String,
+                  @Body params: HashMap<String, List<String>>
+                  )
+            : Call<Data>
+}
+
+data class Data(val data: Accepted)
+data class Accepted(val accepted: HashMap<String, Friend>)
+data class Friend(val success: Boolean, val message: String)
 
 class joinActivity : AppCompatActivity() {
 
@@ -52,12 +70,16 @@ class joinActivity : AppCompatActivity() {
     val arrList: MutableList<String> = mutableListOf<String>("")
 
 
+
+
+    @SuppressLint("CheckResult")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_join)
 
-
-
+        val userIdEdit = findViewById<View>(R.id.userIdEdit) as EditText
+        val usernameEdit = findViewById<View>(R.id.usernameEdit) as EditText
+        val userPwEdit = findViewById<View>(R.id.userPwEdit) as EditText
         val cf = CertificateFactory.getInstance("X.509")
         val caInput: InputStream = getResources().openRawResource(R.raw.server)
         var ca: Certificate? = null
@@ -81,9 +103,7 @@ class joinActivity : AppCompatActivity() {
 
 
 
-        val userIdEdit = findViewById<View>(R.id.userIdEdit) as EditText
-        val usernameEdit = findViewById<View>(R.id.usernameEdit) as EditText
-        val userPwEdit = findViewById<View>(R.id.userPwEdit) as EditText
+
         val trustManagerFactory =
             TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
         trustManagerFactory.init(keyStore)
@@ -112,40 +132,43 @@ class joinActivity : AppCompatActivity() {
 
         client1.hostnameVerifier(HostnameVerifier { hostname, session -> true })
 
-
-
-
-
-        val builder: Retrofit.Builder = Retrofit.Builder()
-            .baseUrl("https://13.125.233.161:6443/")
+        val retrofit = Retrofit.Builder()
+            .baseUrl("https://13.125.233.161:6443")
             .client(client1.build())
             .addConverterFactory(GsonConverterFactory.create())
+            .build()
 
 
-        val retrofit: Retrofit = builder.build()
 
-        val client: GitHubClient = retrofit.create(GitHubClient::class.java)
+        //retrofit 객체를 통해 인터페이스 생성
+        val service = retrofit.create(CometChatFriendsService::class.java)
 
-        val call: Call<List<GitHubRepo>> = client.reposForUser("userReg")
+        //Body에 담을 데이터 생성
+        val friendID="test100"
+        val friends = ArrayList<String>()
+        friends.add(friendID)
+        val body = HashMap<String, List<String>>()
+        body.put("accepted", friends)
 
-        call.enqueue(object : Callback<List<GitHubRepo>> {
-            override fun onFailure(call: Call<List<GitHubRepo>>, t: Throwable) {
-                Log.e("debugTest", "error:(${t.message})")
+        val context=""
+        val apiKey="12"
+        val appID="123"
+        service.addFriend(apiKey, appID,
+            body)?.enqueue(object : Callback<Data> {
+            override fun onFailure(call: Call<Data>, t: Throwable) {
+                Log.d("CometChatAPI::", "Failed API call with call: " + call +
+                        " + exception: " + t)
             }
 
-            override fun onResponse(
-                call: Call<List<GitHubRepo>>,
-                response: Response<List<GitHubRepo>>
-            ) {
-                val repos: List<GitHubRepo>? = response.body()
-                var reposStr = ""
+            override fun onResponse(call: Call<Data>, response: Response<Data>) {
+                Log.d("Response:: ", response.body().toString())
+              //  val friends = response.body()!!.data.accepted
 
-                repos?.forEach { it ->
-                    reposStr += "$it\n"
+      /*          Log.d("Friends:: ", friends.toString())
+                for (friendName in friends.keys) {
+                    Log.d("${friendName}:: ", friends[friendName].toString())
                 }
-                println("로그: ${response.body().toString()}")
-
-                // textView.text = reposStr
+*/
             }
         })
 
@@ -167,46 +190,7 @@ class joinActivity : AppCompatActivity() {
 
     }
 
-    fun getPinnedCertSslSocketFactory(context: Context): SSLSocketFactory? {
-        try {
 
-            val cf = CertificateFactory.getInstance("X.509")
-            val caInput: InputStream = getResources().openRawResource(R.raw.server)
-            var ca: Certificate? = null
-            try {
-                ca = cf.generateCertificate(caInput)
-                println("ca=" + (ca as X509Certificate?)!!.subjectDN)
-            } catch (e: CertificateException) {
-                e.printStackTrace()
-            } finally {
-                caInput.close()
-            }
-            val keyStoreType = KeyStore.getDefaultType()
-            val keyStore = KeyStore.getInstance(keyStoreType)
-            keyStore.load(null, null)
-            if (ca == null) {
-                return null
-            }
-            keyStore.setCertificateEntry("ca", ca)
-            val tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm()
-            val tmf = TrustManagerFactory.getInstance(tmfAlgorithm)
-            tmf.init(keyStore)
-            val sslContext = SSLContext.getInstance("TLS")
-            sslContext.init(null, tmf.trustManagers, null)
-            return sslContext.socketFactory
-        } catch (e: NoSuchAlgorithmException) {
-            e.printStackTrace()
-        } catch (e: IOException) {
-            e.printStackTrace()
-        } catch (e: KeyStoreException) {
-            e.printStackTrace()
-        } catch (e: KeyManagementException) {
-            e.printStackTrace()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        return null
-    }
 
 
     private fun userID_check() {
