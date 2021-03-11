@@ -48,7 +48,7 @@ interface CometChatFriendsService {
             : Call<Data>
 }
 
-data class Data(val result: Accepted)
+data class Data(val result: String)//Accepted)
 data class Accepted(val accepted: HashMap<String, Friend>)
 data class Friend(val success: Boolean, val message: String)
 
@@ -72,7 +72,7 @@ class joinActivity : AppCompatActivity() {
 
 
 
-    @SuppressLint("CheckResult")
+    @SuppressLint("result")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_join)
