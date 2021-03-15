@@ -14,8 +14,6 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_join.*
 import okhttp3.OkHttpClient
 import retrofit2.Call
@@ -24,12 +22,8 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.*
-import java.io.IOException
 import java.io.InputStream
-import java.security.KeyManagementException
 import java.security.KeyStore
-import java.security.KeyStoreException
-import java.security.NoSuchAlgorithmException
 import java.security.cert.Certificate
 import java.security.cert.CertificateException
 import java.security.cert.CertificateFactory
@@ -37,20 +31,9 @@ import java.security.cert.X509Certificate
 import java.util.*
 import javax.net.ssl.*
 
-interface CometChatFriendsService {
-    @Headers("accept: application/json",
-        "content-type: application/json")
-    @POST("/userReg?id=0test&passwd=user1234!&role=50&name=김하은100&contact1=010&contact2=3333&contact3=4444")
-    fun addFriend(@Header("apikey") apiKey: String,
-                  @Header("appid") appID: String,
-                  @Body params: HashMap<String, List<String>>
-                  )
-            : Call<Data>
-}
 
-data class Data(val result: String)//Accepted)
-data class Accepted(val accepted: HashMap<String, Friend>)
-data class Friend(val success: Boolean, val message: String)
+//data class Accepted(val accepted: HashMap<String, Friend>)
+//data class Friend(val success: Boolean, val message: String)
 
 class joinActivity : AppCompatActivity() {
 
@@ -70,8 +53,6 @@ class joinActivity : AppCompatActivity() {
     val arrList: MutableList<String> = mutableListOf<String>("")
 
 
-
-
     @SuppressLint("result")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -80,95 +61,87 @@ class joinActivity : AppCompatActivity() {
         val userIdEdit = findViewById<View>(R.id.userIdEdit) as EditText
         val usernameEdit = findViewById<View>(R.id.usernameEdit) as EditText
         val userPwEdit = findViewById<View>(R.id.userPwEdit) as EditText
-        val cf = CertificateFactory.getInstance("X.509")
-        val caInput: InputStream = resources.openRawResource(R.raw.server)
-        var ca: Certificate? = null
-        try {
-            ca = cf.generateCertificate(caInput)
-            println("ca=" + (ca as X509Certificate?)!!.subjectDN)
-        } catch (e: CertificateException) {
-            e.printStackTrace()
-        } finally {
-            caInput.close()
-        }
-        val keyStoreType = KeyStore.getDefaultType()
-        var keyStore = KeyStore.getInstance(keyStoreType)
-        keyStore.load(null, null)
-        if (ca == null) {
-
-        }
-        keyStore.setCertificateEntry("ca", ca)
 
 
-
-
-
-
-        val trustManagerFactory =
-            TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
-        trustManagerFactory.init(keyStore)
-
-
-        val trustManagers: Array<TrustManager> = trustManagerFactory.trustManagers
-        check(!(trustManagers.size != 1 || trustManagers[0] !is X509TrustManager)) {
-            "Unexpected default trust managers:" + Arrays.toString(
-                trustManagers
-            )
-
-        }
-        val hostnameVerifier = HostnameVerifier { _, session ->
-            HttpsURLConnection.getDefaultHostnameVerifier().run {
-                verify("https://13.125.233.161:6443", session)
+        //   (SSL_Activity.mContext as SSL_Activity).ssl_raw()
+            val cf = CertificateFactory.getInstance("X.509")
+            val caInput: InputStream = resources.openRawResource(R.raw.server)
+            var ca: Certificate? = null
+            try {
+                ca = cf.generateCertificate(caInput)
+                println("ca=" + (ca as X509Certificate?)!!.subjectDN)
+            } catch (e: CertificateException) {
+                e.printStackTrace()
+            } finally {
+                caInput.close()
             }
-        }
-        val trustManager: X509TrustManager = trustManagers[0] as X509TrustManager
-        val sslContext = SSLContext.getInstance("SSL")
-        sslContext.init(null, arrayOf<TrustManager>(trustManager), null)
-        val sslSocketFactory = sslContext.socketFactory
-        val client1: OkHttpClient.Builder = OkHttpClient.Builder()
-            .sslSocketFactory(sslSocketFactory, trustManager)
+            val keyStoreType = KeyStore.getDefaultType()
+            var keyStore = KeyStore.getInstance(keyStoreType)
+            keyStore.load(null, null)
+            if (ca == null) {
+
+            }
+            keyStore.setCertificateEntry("ca", ca)
 
 
 
-        client1.hostnameVerifier(HostnameVerifier { hostname, session -> true })
+            val trustManagerFactory =
+                TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm())
+            trustManagerFactory.init(keyStore)
 
-        val retrofit = Retrofit.Builder()
-            .baseUrl("https://13.125.233.161:6443")
-            .client(client1.build())
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
 
+            val trustManagers: Array<TrustManager> = trustManagerFactory.trustManagers
+            check(!(trustManagers.size != 1 || trustManagers[0] !is X509TrustManager)) {
+                "Unexpected default trust managers:" + Arrays.toString(
+                    trustManagers
+                )
+
+            }
+            val hostnameVerifier = HostnameVerifier { _, session ->
+                HttpsURLConnection.getDefaultHostnameVerifier().run {
+                    verify("https://13.125.233.161:6443", session)
+                }
+            }
+            val trustManager: X509TrustManager = trustManagers[0] as X509TrustManager
+            val sslContext = SSLContext.getInstance("SSL")
+            sslContext.init(null, arrayOf<TrustManager>(trustManager), null)
+            val sslSocketFactory = sslContext.socketFactory
+            val client1: OkHttpClient.Builder = OkHttpClient.Builder()
+                .sslSocketFactory(sslSocketFactory, trustManager)
+
+            client1.hostnameVerifier(HostnameVerifier { hostname, session -> true })
+
+
+            val retrofit = Retrofit.Builder()
+                .baseUrl("https://13.125.233.161:6443")
+                .client(client1.build())
+                .addConverterFactory(GsonConverterFactory.create())
+                .build()
 
 
         //retrofit 객체를 통해 인터페이스 생성
         val service = retrofit.create(CometChatFriendsService::class.java)
 
-        //Body에 담을 데이터 생성
-        val friendID="test100"
-        val friends = ArrayList<String>()
-        friends.add(friendID)
         val body = HashMap<String, List<String>>()
-        body.put("accepted", friends)
 
-        val context=""
-        val apiKey="12"
-        val appID="123"
-        service.addFriend(apiKey, appID,
-            body)?.enqueue(object : Callback<Data> {
+
+
+        val apiKey = "12"
+        val appID = "123"
+        service.addFriend(
+            apiKey, appID,
+            body
+        )?.enqueue(object : Callback<Data> {
             override fun onFailure(call: Call<Data>, t: Throwable) {
-                Log.d("CometChatAPI::", "Failed API call with call: " + call +
-                        " + exception: " + t)
+                Log.d(
+                    "CometChatAPI::", "Failed API call with call: " + call +
+                            " + exception: " + t
+                )
             }
 
             override fun onResponse(call: Call<Data>, response: Response<Data>) {
                 Log.d("Response:: ", response.body().toString())
-              //  val friends = response.body()!!.data.accepted
 
-      /*          Log.d("Friends:: ", friends.toString())
-                for (friendName in friends.keys) {
-                    Log.d("${friendName}:: ", friends[friendName].toString())
-                }
-*/
             }
         })
 
@@ -192,9 +165,7 @@ class joinActivity : AppCompatActivity() {
 
 
 
-
     private fun userID_check() {
-
 
 
         if (userID == "")
